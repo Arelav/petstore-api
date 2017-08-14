@@ -1,12 +1,12 @@
 swagger: "2.0"
 info:
   version: "0.0.1"
-  title: Hello World App
+  title: Pet Store API
 # during dev, should point to your local machine
 host: localhost:10010
-# basePath prefixes all resource paths 
+# basePath prefixes all resource paths
 basePath: /
-# 
+
 schemes:
   # tip: remove http to make production-grade
   - http
@@ -17,44 +17,117 @@ consumes:
 # format of the responses to the client (Accepts)
 produces:
   - application/json
+
 paths:
   /hello:
-    # binds a127 app logic to a route
     x-swagger-router-controller: hello_world
+  /pets:
+    x-swagger-router-controller: get_all_pets
     get:
-      description: Returns 'Hello' to the caller
-      # used as the method name of the controller
-      operationId: hello
-      parameters:
-        - name: name
-          in: query
-          description: The name of the person to whom to say hello
-          required: false
-          type: string
+      description: Returns all pets in the store
+      operationId: GetAllPets
+      produces:
+        - application/json
+      parameters: []
       responses:
-        "200":
-          description: Success
+        200:
+          description: An array of Pets
           schema:
-            # a pointer to a definition
-            $ref: "#/definitions/HelloWorldResponse"
-        # responses may fall through to errors
-        default:
-          description: Error
+            type: array
+            items:
+              $ref: "#/definitions/Pet"
+
+  /pet:
+    post:
+      # x-swagger-router-controller: AddPet
+      description: Add new Pet to the store
+      operationId: AddPet
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: pet
+          required: true
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/Pet"
+      responses:
+        200:
+          description: OK
+
+  /pet/{id}:
+    get:
+      description: Get pet by ID
+      operationId: FindPetById
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of pet to get
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Pet"
+      # x-swagger-router-controller: FindPetById
+
+    delete:
+      description: Delete Pet by ID
+      operationId: DeletePetById
+      parameters:
+        - name: id
+          in: path
+          description: Id of Pet to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: Pet deleted
+      # x-swagger-router-controller: DeletePetById
+
+    put:
+      description: Update a single Pet
+      operationId: UpdatePetById
+      parameters:
+        - name: id
+          in: path
+          description: Id of Pet to delete
+          required: true
+          type: integer
+          format: int64
+        - name: updated_pet
+          in: body
+          description: Updated Pet
+          required: true
+          schema:
+            $ref: "#/definitions/Pet"
+      responses:
+        200:
+          description: Pet Updated
+        400:
+          description: Somtething went wrong
+
   /swagger:
     x-swagger-pipe: swagger_raw
+
 # complex objects have schema definitions
 definitions:
-  HelloWorldResponse:
-    required:
-      - message
+  Pet:
+    type: object
     properties:
-      message:
+      id:
+        type: integer
+        description: Product ID
+      description:
         type: string
-  ErrorResponse:
-    required:
-      - message
-    properties:
-      message:
+        description: Product annotation
+      title:
         type: string
+        description: Product Title
+      imageUrl:
+        type: string
+        description: Product image URL
